@@ -1,0 +1,74 @@
+#!/usr/bin/python
+# -*- mode: python; coding: utf-8 -*-
+
+# Copyright (C) 2014, Oscar Acena <oscaracena@gmail.com>
+# This software is under the terms of Apache License v2 or later.
+
+from __future__ import print_function
+import sys,time
+
+from gattlib import DiscoveryService
+from gattlib import GATTRequester
+
+
+#***************** Edit Here***************************
+
+sensors= {'78:A5:04:61:23:45','78:A5:04:60:DC:06'}   # Enter MAC address of Sensors
+
+
+
+def scan_LE_devices():
+
+	service = DiscoveryService("hci0")
+	devices = service.discover(4)
+
+	for address, name in list(devices.items()):
+	    	print("name: {}, address: {}".format(name, address))
+
+	print("Done.")
+	return address
+
+
+class nRF_Connect(object):
+    def __init__(self, address):
+        self.requester = GATTRequester(address, False)
+        self.connect()
+
+    def connect(self):
+        print("Connecting...", end=' ')
+        sys.stdout.flush()
+
+        self.requester.connect(True)
+        print("OK!")
+	time.sleep(1)
+
+    def request_data(self):			# This will Read data from BLE once it gets connected
+        data = self.requester.read_by_handle(0x12)[0]    	# 0x12 is UART Service Handle
+
+        print("bytes received:", end=' ')
+        for b in data:
+            print(hex(ord(b)), end=' ')
+        print("")
+	print ("Read Complete!!!")
+
+    def send_data(self):
+        self.requester.write_by_handle(0x12, str(0x41))	# writing data on UART BLE Service/Notification Handle
+	print ("Write Complete!!!")
+
+
+
+	
+
+if __name__ == '__main__':
+
+	#list=[]
+	list = scan_LE_devices()
+	time.sleep(1)	
+
+	for sensor_no in sensors:
+
+		nRF_Connect(sensors[sensor_no]).request_data()
+		time.sleep(1)
+		nRF_Connect(:61:23:45').send_data()
+
+	

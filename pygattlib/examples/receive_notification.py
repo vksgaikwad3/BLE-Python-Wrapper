@@ -46,6 +46,15 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage: {} <addr>".format(sys.argv[0]))
         sys.exit(1)
+<<<<<<< HEAD
 
     ReceiveNotification(sys.argv[1])
     print("Done.")
+=======
+	
+   
+
+	ReceiveNotification(sys.argv[1])
+    	print("Done.")
+	
+>>>>>>> fdc8b58d3052b9955d66d6906b291b40f54bcc16

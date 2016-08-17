@@ -24,7 +24,11 @@ class Reader(object):
         print("OK!")
 
     def send_data(self):
+<<<<<<< HEAD
         self.requester.write_by_handle(0x2e, str(bytearray([2])))
+=======
+        self.requester.write_by_handle(0x12, str(bytearray([2])))
+>>>>>>> fdc8b58d3052b9955d66d6906b291b40f54bcc16
 
 
 if __name__ == '__main__':
