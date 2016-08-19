@@ -8,7 +8,6 @@ import time
 
 sensor_address = ['78:A5:04:61:23:45']
 uart_handle = '0x12'
-#uart_tx_handle = '0x12'
 uart_uuid      = '0000ffe1-0000-1000-8000-00805f9b34fb' 
 notification_handle = '0x12'
 
@@ -30,16 +29,19 @@ class nRF():
 
 		disconnectSensor = subprocess.Popen(['sudo','hcitool','ledc',sensor_con_Handle],stdout=subprocess.PIPE)
 		
-		output =  disconnectSensor.communicate()
+		print("Disconnecting.....................")
+		#output =  disconnectSensor.communicate()
 	
-		print (output)
+		#print (output)
 
 
 
 	def read_primary_services(self,sensor_address):
 		
-		data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--primary'],stdout=subprocess.PIPE )
+		' Method for Primary Service Discovery '
 
+		data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--primary'],stdout=subprocess.PIPE )
+		
 		
 		sensor_data =  data.communicate()
 		
@@ -49,6 +51,8 @@ class nRF():
 
 	def read_by_handle(self,sensor_address,handle):
 		
+		' Method to Characteristics Value/Descriptor Read by handle '		
+
 		sensor_data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--char-read','-a',handle],stdout=subprocess.PIPE)		
 		read_data = sensor_data.communicate()
 		
@@ -56,59 +60,88 @@ class nRF():
 	
 	def read_by_uuid(self,sensor_address,uuid):
 
+		'Method to Characteristics Value/Descriptor Read by UUIDs'
+
                 sensor_data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--char-read','--uuid='+ uuid],stdout=subprocess.PIPE)
                 get_data = sensor_data.communicate()
 
                 print(get_data)
 	
 	def listen_Notifications(self,sensor_address,notification_handle):
+
+		'Method to Listen for notifications and indications'
+		con_handle = self.connectLE(sensor_address)  		#get connection handle
+		print("Connection Handle:",con_handle)		
+		self.disconnectLE(con_handle)				# disconnect LE		
 		
-		p = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--char-read','-a', notification_handle,'--listen'],stdout=subprocess.PIPE )
+		time.sleep(2)		
+				
+		p = subprocess.Popen(['sudo','gatttool','-b',sensor_address,
+				      '--char-read','-a', notification_handle,'--listen'],stdout=subprocess.PIPE )
 		print("Done Command")
-		
-		d = p.communicate()
-		print ("Done Communicate")
-
 		print(p)
-		os.kill(d.pid, signal.SIGINT)
-		print("Killed")
+		
+		self.disconnectLE(con_handle)		#stop notifications		
 
+		d = p.communicate()
 
+		return d
 
 	def write_by_handle(self,sensor_address,handle,value):
 	
+		'Method to Characteristics Value Write (Write Request)'	
+		
 		write_data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--char-write-req','-a',handle,'-n',value],stdout=subprocess.PIPE)
                 write_res = write_data.communicate()[0]
 
                 print(write_res)
 
 
-	def write_by_uuid(self,sensor_address,handle,value):
+'''	def write_by_uuid(self,sensor_address,handle,value):
 
-                write_data = subprocess.Popen(['sudo','gatttool','-b',sensor_ad$
+		'Not supported to write on UUIDs'
+		
+                write_data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--char-write-req',],stdout=subprocess.PIPE)
                 write_res = write_data.communicate()[0]
 
                 print(write_res)
 
-
+'''
 
 
 
 if __name__ == '__main__':
 
 	nRFLE = nRF()		#instance of nRF
+	
+	log = open("sensorlog.txt",'a')
 
-	#con_handle =nRFLE.connectLE(sensor_address[0])
+	
+	while True:
+		try:
+	
+	
+			#con_handle =nRFLE.connectLE(sensor_address[0])
 
-	time.sleep(2)
-	#nRFLE.read_primary_att(sensor_address[0])
-	#nRFLE.read_by_handle(sensor_address[0],uart_handle)
-	#nRFLE.read_by_uuid(sensor_address[0],uart_uuid)	
-	#nRFLE.listen_Notifications(sensor_address[0],notification_handle)	
-	nRFLE.write_by_handle(sensor_address[0],uart_handle,'0x41')
+			#time.sleep(2)
+			
+			#nRFLE.disconnectLE(con_handle)
+			time.sleep(2)
+			
+			#nRFLE.read_primary_att(sensor_address[0])
+			nRFLE.read_by_handle(sensor_address[0],uart_handle)
+			#nRFLE.read_by_uuid(sensor_address[0],uart_uuid)	
+		
+			#data = nRFLE.listen_Notifications(sensor_address[0],notification_handle)	
+			#nRFLE.write_by_handle(sensor_address[0],uart_handle,value='0x41')
 
-
-	#nRFLE.disconnectLE(con_handle)
-	print ("Done")
+			#log.write(str(data)+'\n')	#log data
+	
+			time.sleep(2)	
+			#nRFLE.disconnectLE(con_handle)
+		finally:
+	
+			print ("Done")
+			#log.close()	# close the file
 
 
