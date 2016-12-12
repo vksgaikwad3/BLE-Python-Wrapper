@@ -6,10 +6,12 @@ import time
 # Connect with LE device over hcitool 
 #---------------------- Enter here Sensors BLE Address ----------------------------
 
-sensor_address = ['78:A5:04:61:23:45']
-uart_handle = '0x12'
-uart_uuid      = '0000ffe1-0000-1000-8000-00805f9b34fb' 
-notification_handle = '0x12'
+sensor_address = ['DE:42:D0:A6:71:F2','CD:39:C2:F9:B1:E4']
+uart_rx_handle = '0x0b'
+uart_tx_handle = '0x0e'
+
+#uart_uuid      = '0000ffe1-0000-1000-8000-00805f9b34fb' 
+#notification_handle = '0x12'
 
 class nRF():
 
@@ -54,6 +56,7 @@ class nRF():
 		' Method to Characteristics Value/Descriptor Read by handle '		
 
 		sensor_data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--char-read','-a',handle],stdout=subprocess.PIPE)		
+		sensor_data = subprocess.Popen(['sudo','gatttool','-i','hci0','-b',sensor_address,'-t','random','-l','low','--char-read','-a',handle],stdout=subprocess.PIPE)
 		read_data = sensor_data.communicate()
 		
 		print(read_data)
@@ -62,10 +65,11 @@ class nRF():
 
 		'Method to Characteristics Value/Descriptor Read by UUIDs'
 
-                sensor_data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--char-read','--uuid='+ uuid],stdout=subprocess.PIPE)
-                get_data = sensor_data.communicate()
+		#sensor_data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--char-read','--uuid='+ uuid],stdout=subprocess.PIPE)
+		sensor_data = subprocess.Popen(['sudo','gatttool','-i','hci0','-b',sensor_address,'-t','random','-l','low','--char-read','--uuid='+ uuid],stdout=subprocess.PIPE)        
+		get_data = sensor_data.communicate()
 
-                print(get_data)
+		print(get_data)
 	
 	def listen_Notifications(self,sensor_address,notification_handle):
 
@@ -91,10 +95,10 @@ class nRF():
 	
 		'Method to Characteristics Value Write (Write Request)'	
 		
-		write_data = subprocess.Popen(['sudo','gatttool','-b',sensor_address,'--char-write-req','-a',handle,'-n',value],stdout=subprocess.PIPE)
-                write_res = write_data.communicate()[0]
+		write_data = subprocess.Popen(['sudo','gatttool','-i','hci0','-b',sensor_address,'-t','random','-l','low','--char-write','-a',handle,'-n',value],stdout=subprocess.PIPE)
+		write_res = write_data.communicate()[0]
 
-                print(write_res)
+		print(write_res)
 
 
 '''	def write_by_uuid(self,sensor_address,handle,value):
@@ -114,22 +118,29 @@ if __name__ == '__main__':
 
 	nRFLE = nRF()		#instance of nRF
 	
-	log = open("sensorlog.txt",'a')
+	#log = open("sensorlog.txt",'a')
 
 	
-	while True:
-		try:
+	try:
 	
-	
-			#con_handle =nRFLE.connectLE(sensor_address[0])
+		#con_handle =nRFLE.connectLE(sensor_address[0])
 
-			#time.sleep(2)
+		#time.sleep(2)
 			
-			#nRFLE.disconnectLE(con_handle)
+		#nRFLE.disconnectLE(con_handle)
+		for i in range(0,2):
+
+			nRFLE.write_by_handle(sensor_address[1],uart_tx_handle,value='0x01')
 			time.sleep(2)
 			
-			#nRFLE.read_primary_att(sensor_address[0])
-			nRFLE.read_by_handle(sensor_address[0],uart_handle)
+		#nRFLE.read_primary_att(sensor_address[0])
+			
+		print("Write Complete \n");
+		time.sleep(2)
+		while True:
+	
+			nRFLE.read_by_handle(sensor_address[1],uart_rx_handle)
+			print("Read Complete \n")
 			#nRFLE.read_by_uuid(sensor_address[0],uart_uuid)	
 		
 			#data = nRFLE.listen_Notifications(sensor_address[0],notification_handle)	
@@ -139,9 +150,9 @@ if __name__ == '__main__':
 	
 			time.sleep(2)	
 			#nRFLE.disconnectLE(con_handle)
-		finally:
+	finally:
 	
-			print ("Done")
-			#log.close()	# close the file
+		print ("Done")
+		#log.close()	# close the file
 
 
